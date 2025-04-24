@@ -1,126 +1,131 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>You Are An Idiot!</title>
+  <meta charset="UTF-8">
+  <title>Galium</title>
+  <style>
+    body {
+      margin: 0;
+      background: white;
+    }
+    #title {
+      text-align: center;
+      font-size: 100px;
+      margin-top: 50px;
+    }
+    #stopBtn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: red;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      display: none;
+    }
+    #tutorial {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      max-width: 90vw;
+      max-height: 90vh;
+      z-index: 999;
+    }
+  </style>
 </head>
 <body id="bodyEl">
-    <h1 id="title"></h1>
-    <button id="stopBtn" style="position:fixed;top:10px;right:10px;padding:10px;background:red;color:white;font-weight:bold;border:none;border-radius:5px;cursor:pointer;">STOP</button>
+  <h1 id="title"></h1>
+  <img id="tutorial" src="https://i.univbkstr.com/v3/img/howTo/chrome_imgMain.png" alt="Enable Popups Tutorial">
+  <button id="stopBtn">STOP</button>
 
-    <style>
-        #title {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 100px;
+  <script>
+    const title = document.getElementById('title');
+    const body = document.getElementById('bodyEl');
+    const stopBtn = document.getElementById('stopBtn');
+    const tutorial = document.getElementById('tutorial');
+
+    const music = new Audio('music.mp3');
+    music.loop = true;
+
+    let nextAn = 1;
+    let indexN = 0;
+    let wordlist = ['you', 'are', 'an', 'idiot'];
+    let popups = [];
+
+    function getRandomCoordinates() {
+      return [
+        Math.floor(Math.random() * (screen.width - 100)),
+        Math.floor(Math.random() * (screen.height - 100))
+      ];
+    }
+
+    function createNewPopUp() {
+      let newWindow = window.open('index.html', '', 'width=350,height=200');
+      if (newWindow) popups.push(newWindow);
+    }
+
+    let popupsActive = false;
+
+    function startMadness() {
+      if (popupsActive) return;
+      popupsActive = true;
+
+      tutorial.style.display = 'none';
+      stopBtn.style.display = 'block';
+
+      music.play();
+      popups.push(window);
+
+      setInterval(() => {
+        for (let i = 0; i < popups.length; i++) {
+          try {
+            let [x, y] = getRandomCoordinates();
+            popups[i].moveTo(x, y);
+            popups[i].focus();
+          } catch (e) { }
         }
-    </style>
+      }, 50);
 
-    <script>
-        const title = document.getElementById('title');
-        const body = document.getElementById('bodyEl');
-        const stopBtn = document.getElementById('stopBtn');
-
-        const music = new Audio('assets/music.mp3');
-        music.loop = true;
-
-        let nextAn = 1;
-        let indexN = 0;
-        let wordlist = ['you', 'are', 'an', 'idiot'];
-        let popups = [window];
-
-        function getRandomCordinats() {
-            return [Math.floor(Math.random() * (screen.width - 100)), Math.floor(Math.random() * (screen.height - 100))];
+      setInterval(() => {
+        title.textContent = wordlist[indexN];
+        if (nextAn == 1) {
+          title.style.color = 'black';
+          body.style.backgroundColor = 'white';
+          nextAn = 2;
+        } else {
+          title.style.color = 'white';
+          body.style.backgroundColor = 'black';
+          nextAn = 1;
         }
+        indexN = (indexN + 1) % wordlist.length;
+      }, 400);
+    }
 
-        setInterval(() => {
-            if (popups.length != 0) {
-                for (let i = 0; i < popups.length; i++) {
-                    let xy = getRandomCordinats();
-                    try {
-                        popups[i].moveTo(xy[0], xy[1]);
-                        popups[i].focus();
-                    } catch (e) {}
-                }
-            }
-        }, 50);
+    window.addEventListener('keydown', (e) => {
+      startMadness();
+      for (let i = 0; i < 20; i++) createNewPopUp();
+      e.preventDefault();
+    });
 
-        setInterval(() => {
-            title.textContent = wordlist[indexN];
-            if (nextAn == 1) {
-                title.style.color = 'black';
-                body.style.backgroundColor = 'white';
-                nextAn = 2;
-            } else {
-                title.style.color = 'white';
-                body.style.backgroundColor = 'black';
-                nextAn = 1;
-            }
-            if (indexN == 3) {
-                indexN = 0;
-            } else {
-                indexN++;
-            }
-        }, 400);
+    window.addEventListener('load', () => {
+      title.style.marginTop = (window.innerHeight / 2 - 120).toString() + "px";
+    });
 
-        function createNewPopUp() {
-            let newWindow = window.open('index.html', '', 'width=350px,height=200px');
-            if (newWindow) popups.push(newWindow);
-        }
+    window.addEventListener('resize', () => {
+      title.style.marginTop = (window.innerHeight / 2 - 120).toString() + "px";
+    });
 
-        window.addEventListener('beforeunload', (e) => {
-            for (let i = 0; i < 20; i++) {
-                createNewPopUp();
-            }
-            e.preventDefault();
-            e.returnValue = '';
-        });
-
-        window.addEventListener('load', () => {
-            let h = window.innerHeight;
-            title.style.marginTop = (h / 2 - 120).toString() + "px";
-        });
-
-        window.addEventListener('resize', () => {
-            let h = window.innerHeight;
-            title.style.marginTop = (h / 2 - 120).toString() + "px";
-        });
-
-        document.addEventListener('click', () => {
-            music.play();
-        });
-
-        document.addEventListener('mouseenter', () => {
-            music.play();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            music.play();
-            for (let i = 0; i < 20; i++) {
-                createNewPopUp();
-            }
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            music.play();
-            for (let i = 0; i < 20; i++) {
-                createNewPopUp();
-            }
-            e.preventDefault();
-        });
-
-        music.addEventListener('ended', () => {
-            music.play();
-        });
-
-        stopBtn.addEventListener('click', () => {
-            popups.forEach(p => {
-                try { p.close(); } catch (e) {}
-            });
-            music.pause();
-            music.currentTime = 0;
-        });
-    </script>
+    stopBtn.addEventListener('click', () => {
+      for (let i = 0; i < popups.length; i++) {
+        try { popups[i].close(); } catch (e) {}
+      }
+      music.pause();
+      music.currentTime = 0;
+    });
+  </script>
 </body>
 </html>
