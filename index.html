@@ -2,41 +2,175 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Test</title>
+  <title>Galium☠</title>
   <style>
     body {
       margin: 0;
       background: white;
+    }
+    #title {
       text-align: center;
-      font-size: 50px;
+      font-size: 100px;
+      margin-top: 50px;
+    }
+    #stopBtn, #startBtn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: red;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      display: none;
+      z-index: 9999;
+    }
+    #startBtn {
+      right: auto;
+      left: 10px;
+      background-color: green;
+    }
+    #tutorial {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      max-width: 90vw;
+      max-height: 90vh;
+      z-index: 999;
     }
   </style>
 </head>
-<body>
-  <h1 id="title">you</h1>
+<body id="bodyEl">
+  <h1 id="title"></h1>
+  <img id="tutorial" src="https://i.univbkstr.com/v3/img/howTo/chrome_imgMain.png" alt="Enable Popups Tutorial">
+  <button id="startBtn">START</button>
+  <button id="stopBtn">STOP</button>
+
   <script>
+    const title = document.getElementById('title');
+    const body = document.getElementById('bodyEl');
+    const stopBtn = document.getElementById('stopBtn');
+    const startBtn = document.getElementById('startBtn');
+    const tutorial = document.getElementById('tutorial');
+
     const music = new Audio('music.mp3');
     music.loop = true;
-    music.play();
 
     const wordlist = ['you', 'are', 'an', 'idiot'];
     let index = 0;
     let nextAn = 1;
-    const title = document.getElementById('title');
+    let popups = [];
 
-    setInterval(() => {
-      title.textContent = wordlist[index];
-      if (nextAn === 1) {
-        title.style.color = 'black';
-        document.body.style.backgroundColor = 'white';
-        nextAn = 2;
-      } else {
-        title.style.color = 'white';
-        document.body.style.backgroundColor = 'black';
-        nextAn = 1;
+    function getRandomCoordinates() {
+      return [
+        Math.floor(Math.random() * (screen.width - 100)),
+        Math.floor(Math.random() * (screen.height - 100))
+      ];
+    }
+
+    function openNewWindow() {
+      const newWin = window.open(location.href + '#popup', '', 'width=350,height=200');
+      if (newWin) {
+        popups.push(newWin);
+        const checkClose = setInterval(() => {
+          if (newWin.closed) {
+            clearInterval(checkClose);
+            for (let i = 0; i < 2; i++) openNewWindow(); // Multiply on close
+          }
+        }, 500);
       }
-      index = (index + 1) % wordlist.length;
-    }, 400);
+    }
+
+    function startMadness() {
+      tutorial.style.display = 'none';
+      startBtn.style.display = 'none';
+      stopBtn.style.display = 'block';
+
+      const testPop = window.open('', '', 'width=200,height=100');
+      if (!testPop) {
+        alert("Please enable pop-ups in your browser to continue.");
+        return;
+      } else {
+        testPop.close();
+      }
+
+      music.play();
+      popups.push(window);
+
+      setInterval(() => {
+        popups.forEach(p => {
+          try {
+            const [x, y] = getRandomCoordinates();
+            p.moveTo(x, y);
+            p.focus();
+          } catch (e) {}
+        });
+      }, 30); // Faster bouncing
+
+      setInterval(() => {
+        title.textContent = wordlist[index];
+        if (nextAn === 1) {
+          title.style.color = 'black';
+          body.style.backgroundColor = 'white';
+          nextAn = 2;
+        } else {
+          title.style.color = 'white';
+          body.style.backgroundColor = 'black';
+          nextAn = 1;
+        }
+        index = (index + 1) % wordlist.length;
+      }, 300); // Faster flashing
+
+      for (let i = 0; i < 10; i++) openNewWindow();
+    }
+
+    startBtn.addEventListener('click', startMadness);
+
+    stopBtn.addEventListener('click', () => {
+      popups.forEach(p => {
+        try { p.close(); } catch (e) {}
+      });
+      music.pause();
+      music.currentTime = 0;
+      popups = [];
+    });
+
+    window.addEventListener('load', () => {
+      title.style.marginTop = (window.innerHeight / 2 - 120).toString() + "px";
+      if (location.href.includes('#popup')) {
+        // This is a clone popup
+        document.body.innerHTML = '<h1 id="title">you</h1>';
+        const title = document.getElementById('title');
+        music.play();
+        setInterval(() => {
+          title.textContent = wordlist[index];
+          document.body.style.backgroundColor = nextAn === 1 ? 'white' : 'black';
+          title.style.color = nextAn === 1 ? 'black' : 'white';
+          nextAn = nextAn === 1 ? 2 : 1;
+          index = (index + 1) % wordlist.length;
+        }, 300);
+      } else {
+        startBtn.style.display = 'block';
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      title.style.marginTop = (window.innerHeight / 2 - 120).toString() + "px";
+    });
+
+    // Global console command to close all
+    window.closeAll = () => {
+      popups.forEach(p => {
+        try { p.close(); } catch (e) {}
+      });
+      music.pause();
+      music.currentTime = 0;
+      popups = [];
+      console.log("Closed all popups and stopped music.");
+    };
   </script>
 </body>
 </html>
