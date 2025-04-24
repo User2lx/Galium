@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Galium</title>
+  <title>You Are An Idiot!</title>
   <style>
     body {
       margin: 0;
@@ -13,7 +13,7 @@
       font-size: 100px;
       margin-top: 50px;
     }
-    #stopBtn {
+    #stopBtn, #startBtn {
       position: fixed;
       top: 10px;
       right: 10px;
@@ -25,6 +25,12 @@
       border: none;
       border-radius: 8px;
       display: none;
+      z-index: 9999;
+    }
+    #startBtn {
+      right: auto;
+      left: 10px;
+      background-color: green;
     }
     #tutorial {
       position: fixed;
@@ -40,15 +46,17 @@
 <body id="bodyEl">
   <h1 id="title"></h1>
   <img id="tutorial" src="https://i.univbkstr.com/v3/img/howTo/chrome_imgMain.png" alt="Enable Popups Tutorial">
+  <button id="startBtn">START</button>
   <button id="stopBtn">STOP</button>
 
   <script>
     const title = document.getElementById('title');
     const body = document.getElementById('bodyEl');
     const stopBtn = document.getElementById('stopBtn');
+    const startBtn = document.getElementById('startBtn');
     const tutorial = document.getElementById('tutorial');
 
-    const music = new Audio('music.mp3');
+    const music = new Audio('assets/music.mp3');
     music.loop = true;
 
     let nextAn = 1;
@@ -68,17 +76,22 @@
       if (newWindow) popups.push(newWindow);
     }
 
-    let popupsActive = false;
-
     function startMadness() {
-      if (popupsActive) return;
-      popupsActive = true;
-
       tutorial.style.display = 'none';
+      startBtn.style.display = 'none';
       stopBtn.style.display = 'block';
 
-      music.play();
+      let testPop = window.open('', '', 'width=200,height=100');
+      if (testPop === null) {
+        alert("Please enable pop-ups in your browser to continue.");
+        return;
+      } else {
+        testPop.document.write("<p>Pop-ups enabled!</p>");
+        testPop.close();
+      }
+
       popups.push(window);
+      music.play();
 
       setInterval(() => {
         for (let i = 0; i < popups.length; i++) {
@@ -92,7 +105,7 @@
 
       setInterval(() => {
         title.textContent = wordlist[indexN];
-        if (nextAn == 1) {
+        if (nextAn === 1) {
           title.style.color = 'black';
           body.style.backgroundColor = 'white';
           nextAn = 2;
@@ -103,21 +116,9 @@
         }
         indexN = (indexN + 1) % wordlist.length;
       }, 400);
-    }
 
-    window.addEventListener('keydown', (e) => {
-      startMadness();
       for (let i = 0; i < 20; i++) createNewPopUp();
-      e.preventDefault();
-    });
-
-    window.addEventListener('load', () => {
-      title.style.marginTop = (window.innerHeight / 2 - 120).toString() + "px";
-    });
-
-    window.addEventListener('resize', () => {
-      title.style.marginTop = (window.innerHeight / 2 - 120).toString() + "px";
-    });
+    }
 
     stopBtn.addEventListener('click', () => {
       for (let i = 0; i < popups.length; i++) {
@@ -125,6 +126,17 @@
       }
       music.pause();
       music.currentTime = 0;
+    });
+
+    startBtn.addEventListener('click', startMadness);
+
+    window.addEventListener('load', () => {
+      title.style.marginTop = (window.innerHeight / 2 - 120).toString() + "px";
+      startBtn.style.display = 'block';
+    });
+
+    window.addEventListener('resize', () => {
+      title.style.marginTop = (window.innerHeight / 2 - 120).toString() + "px";
     });
   </script>
 </body>
